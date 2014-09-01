@@ -1,0 +1,4 @@
+petr_direct_api:
+    resource: "@PetrDirectApiBundle/Resources/config/routing.yml"
+    prefix:   /
+
