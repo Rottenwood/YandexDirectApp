@@ -1,0 +1,5 @@
+# Конфигурация для Яндекс.Директ API
+
+sandbox_url: "https://api-sandbox.direct.yandex.ru/v4/json/"
+usertoken: "15d86aaeb08d4db29a188cb7bb9db057"
+locale: "ru"
