@@ -1,7 +1,7 @@
 parameters:
-#    petr_direct_api.example.class: Petr\DirectApiBundle\Example
+    direct_api.service.class: Petr\DirectApiBundle\Service\DirectService
 
 services:
-#    petr_direct_api.example:
-#        class: %petr_direct_api.example.class%
-#        arguments: [@service_id, "plain_value", %parameter%]
+    direct:
+        class: %direct_api.service.class%
+        arguments: [@kernel, @buzz]
