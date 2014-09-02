@@ -1,3 +1,3 @@
-petr_direct_api_homepage:
-    path:     /hello/{name}
+direct_api_index:
+    path:     /
     defaults: { _controller: PetrDirectApiBundle:Default:index }
