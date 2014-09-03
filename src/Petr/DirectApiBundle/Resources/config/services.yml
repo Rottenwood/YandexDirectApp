@@ -4,4 +4,4 @@ parameters:
 services:
     direct:
         class: %direct_api.service.class%
-        arguments: [@kernel, @buzz]
+        arguments: [@doctrine.orm.entity_manager, @kernel, @buzz]

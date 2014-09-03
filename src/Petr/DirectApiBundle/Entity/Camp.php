@@ -21,6 +21,12 @@ class Camp {
 
     /**
      * @var integer
+     * @ORM\Column(name="campaign", type="integer", unique=true)
+     */
+    private $campaignId;
+
+    /**
+     * @var integer
      * @ORM\Column(name="dailyclicks", type="integer")
      */
     private $dailyclicks;
@@ -127,4 +133,20 @@ class Camp {
     public function getWeeklycosts() {
         return $this->weeklycosts;
     }
+
+    /**
+     * @param int $campaignId
+     */
+    public function setCampaignId($campaignId) {
+        $this->campaignId = $campaignId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCampaignId() {
+        return $this->campaignId;
+    }
+
+
 }
