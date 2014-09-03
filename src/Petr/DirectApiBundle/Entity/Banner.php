@@ -21,6 +21,12 @@ class Banner {
 
     /**
      * @var integer
+     * @ORM\Column(name="banner", type="integer", unique=true)
+     */
+    private $bannerId;
+
+    /**
+     * @var integer
      * @ORM\Column(name="dailyclicks", type="integer")
      */
     private $dailyclicks;
@@ -49,7 +55,6 @@ class Banner {
      */
 
     private $campId;
-
 
     /**
      * Get id
@@ -153,4 +158,20 @@ class Banner {
     public function getCampId() {
         return $this->campId;
     }
+
+    /**
+     * @param int $bannerId
+     */
+    public function setBannerId($bannerId) {
+        $this->bannerId = $bannerId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBannerId() {
+        return $this->bannerId;
+    }
+
+
 }

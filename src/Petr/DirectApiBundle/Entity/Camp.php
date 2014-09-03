@@ -61,7 +61,7 @@ class Camp {
     /**
      * Set dailyclicks
      * @param integer $dailyclicks
-     * @return Camps
+     * @return Camp
      */
     public function setDailyclicks($dailyclicks) {
         $this->dailyclicks = $dailyclicks;
@@ -80,7 +80,7 @@ class Camp {
     /**
      * Set dailycosts
      * @param integer $dailycosts
-     * @return Camps
+     * @return Camp
      */
     public function setDailycosts($dailycosts) {
         $this->dailycosts = $dailycosts;
@@ -99,7 +99,7 @@ class Camp {
     /**
      * Set weeklyclicks
      * @param integer $weeklyclicks
-     * @return Camps
+     * @return Camp
      */
     public function setWeeklyclicks($weeklyclicks) {
         $this->weeklyclicks = $weeklyclicks;
@@ -118,7 +118,7 @@ class Camp {
     /**
      * Set weeklycosts
      * @param integer $weeklycosts
-     * @return Camps
+     * @return Camp
      */
     public function setWeeklycosts($weeklycosts) {
         $this->weeklycosts = $weeklycosts;
