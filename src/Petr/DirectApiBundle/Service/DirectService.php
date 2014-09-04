@@ -76,6 +76,7 @@ class DirectService {
      * Запрос к API Яндекс.директа
      * @param        $method
      * @param string $params
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      * @internal param array $param
      * @return mixed
      */
@@ -93,14 +94,18 @@ class DirectService {
         // отправка запроса к API
         $response = $this->buzz->post($this->directConfig["sandbox_url"], array(), json_encode($contents));
 
-        echo $this->buzz->getLastRequest() . "<br>";
-        echo "*****************<br>";
+        // если в конфиге включен режим отладки, то показывать запросы к API директа
+        if ($this->directConfig["debug"] == true) {
+            echo $this->buzz->getLastRequest() . "<hr>";
+        }
 
         $responseJson = $response->getContent();
         $responseArray = json_decode($responseJson, true);
 
         // обработка ошибок обращения к API
-        if (array_key_exists('error_str', $responseArray)) {
+        if (array_key_exists('error_code', $responseArray)
+            // пропускаем код ошибки "объявления у кампании не найдены"
+            && $responseArray['error_code'] != 2) {
             throw new Exception($responseArray['error_str'] . ": " . $responseArray['error_detail']);
         }
 
@@ -144,41 +149,6 @@ class DirectService {
 
         return $allLocalCampaignsStrategy;
     }
-
-    /**
-     * Список ID всех кампаний из директа
-     * @return array
-     */
-    public function apiAllCampaignsIds() {
-        $allCampaigns = $this->api("GetCampaignsList");
-        $allCampaignsIds = array();
-
-        foreach ($allCampaigns["data"] as $campaign) {
-            $allCampaignsIds[] = $campaign["CampaignID"];
-        }
-
-        return $allCampaignsIds;
-    }
-
-    //    /**
-    //     * Запрос к API на получение всех объявлений для выбранных кампаний
-    //     * @param $campaignIds
-    //     * @return mixed
-    //     */
-    //    public function getAllBannersByCampaign($campaignIds) {
-    //        $params = array(
-    //            'CampaignIDS' => $campaignIds,
-    //        );
-    //
-    //        $banners = $this->api("GetBanners", $params);
-    //
-    //        // обработка результатов запроса
-    //        if (array_key_exists('data', $banners)) {
-    //            $banners = $banners["data"];
-    //        }
-    //
-    //        return $banners;
-    //    }
 
     /**
      * Статистика по кампаниям за времянной промежуток
@@ -420,10 +390,10 @@ class DirectService {
                 $bannerDailyClicks = $strategyObj->getDailyclicks() * $timeInterval;
                 $bannerDailyCosts = $strategyObj->getDailycosts() * $timeInterval;
 
-                var_dump($bannerClick);
-                var_dump($bannerDailyClicks);
-                var_dump($bannerPrice);
-                var_dump($bannerDailyCosts);
+//                var_dump($bannerClick);
+//                var_dump($bannerDailyClicks);
+//                var_dump($bannerPrice);
+//                var_dump($bannerDailyCosts);
 
                 // сверка кликов и затрат
                 if ($bannerClick < $bannerDailyClicks

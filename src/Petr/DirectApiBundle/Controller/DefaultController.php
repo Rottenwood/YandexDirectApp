@@ -20,11 +20,11 @@ class DefaultController extends Controller {
 
         // параметры для запроса статистики
         $campaigns = $directService->getAllLocalCampaignsIds();
-        $dateFrom = "2014-09-03";
+        $dateFrom = "2014-09-04";
         $dateTo = "2014-09-04";
 
-        $campaignStat = $directService->getCampaignStat();
-//        $campaignStat = $directService->getCampaignStat($campaigns, $dateFrom, $dateTo);
+//        $campaignStat = $directService->getCampaignStat();
+        $campaignStat = $directService->getCampaignStat($campaigns, $dateFrom, $dateTo);
 //        $campaignStat = $directService->getCampaignStat(array(67807));
         $data["checkResult"] = $campaignStat;
 
