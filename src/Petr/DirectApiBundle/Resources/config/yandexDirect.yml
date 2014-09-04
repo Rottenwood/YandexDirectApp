@@ -5,4 +5,4 @@ usertoken: "15d86aaeb08d4db29a188cb7bb9db057"
 locale: "ru"
 
 # режим отладки запросов
-debug: true
+debug: false

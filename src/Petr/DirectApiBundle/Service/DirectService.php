@@ -44,7 +44,7 @@ class DirectService {
     private function configLoad() {
         $path = $this->kernel->locateResource("@PetrDirectApiBundle/Resources/config/yandexDirect.yml");
         if (!is_string($path)) {
-            throw new Exception("Type of $path must be string.");
+            throw new Exception("$path должен быть строкой.");
         }
         $directConfig = Yaml::parse(file_get_contents($path));
 
@@ -74,13 +74,12 @@ class DirectService {
 
     /**
      * Запрос к API Яндекс.директа
-     * @param        $method
-     * @param string $params
-     * @throws \Symfony\Component\Config\Definition\Exception\Exception
-     * @internal param array $param
+     * @param string $method
+     * @param array  $params
      * @return mixed
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
-    public function api($method, $params = '') {
+    public function api($method, $params = array()) {
         $contents = array(
             'method' => $method,
             'token'  => $this->directConfig["usertoken"],
@@ -105,7 +104,8 @@ class DirectService {
         // обработка ошибок обращения к API
         if (array_key_exists('error_code', $responseArray)
             // пропускаем код ошибки "объявления у кампании не найдены"
-            && $responseArray['error_code'] != 2) {
+            && $responseArray['error_code'] != 2
+        ) {
             throw new Exception($responseArray['error_str'] . ": " . $responseArray['error_detail']);
         }
 
@@ -152,40 +152,12 @@ class DirectService {
 
     /**
      * Статистика по кампаниям за времянной промежуток
-     * @param        $campaigns array
-     * @param string $dateFrom
-     * @param string $dateTo
-     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     * @param array $campaigns
+     * @param       $dateFrom
+     * @param       $dateTo
      * @return mixed
      */
-    public function getCampaignStat($campaigns = array(), $dateFrom = '', $dateTo = '') {
-
-        // если не указаны ID кампаний
-        if (!$campaigns) {
-            $campaigns = $this->apiAllCampaignsIds();
-        }
-
-        // дефолтное значение даты
-        if (!$dateFrom) {
-            $dateFrom = date("Y-m-d");
-        }
-        if (!$dateTo) {
-            $dateTo = date("Y-m-d");
-        }
-
-        // валидация даты
-        $format = "Y-m-d";
-        if (!(\DateTime::createFromFormat($format, $dateFrom) == true
-            && \DateTime::createFromFormat($format, $dateTo) == true
-        )
-        ) {
-            $error = "Неверно задана дата: Y-m-d";
-            throw new Exception($error);
-        }
-
-        // интервал в днях между временем начала и окончания
-        $timeInterval = date_diff(date_create($dateFrom), date_create($dateTo))->days;
-
+    public function getCampaignStat($campaigns, $dateFrom, $dateTo) {
         // параметры для запроса
         $params = array(
             'CampaignIDS' => $campaigns,
@@ -201,11 +173,41 @@ class DirectService {
             $campaignStat = $campaignStat["data"];
         }
 
+        return $campaignStat;
+    }
+
+    /**
+     * Проверка эффективности кампаний и объявлений
+     * @param array  $campaigns
+     * @param string $dateFrom
+     * @param string $dateTo
+     * @return array
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     */
+    public function checkEffectiveness($campaigns = array(), $dateFrom = '', $dateTo = '') {
+        if (!is_array($campaigns)) {
+            throw new Exception('$campaigns - должен быть массивом.');
+        }
+
+        // если не указаны ID кампаний
+        if (empty($campaigns)) {
+            $campaigns = $this->getAllLocalCampaignsIds();
+        }
+
+        // валидация даты и разница в днях
+        $validData = $this->dateValidation($dateFrom, $dateTo);
+        $dateFrom = $validData["from"];
+        $dateTo = $validData["to"];
+        $timeInterval = $validData["interval"];
+
+        // запрос статистики кампаний из API директа
+        $campaignStat = $this->getCampaignStat($campaigns, $dateFrom, $dateTo);
+
         // проверка на соответствие статистики (эффективность кампании)
-        $checkEffectiveness = $this->checkEffectiveness($campaignStat);
+        $checkEffectiveness = $this->checkEffectivenessCampaign($campaignStat, $timeInterval);
 
         // результирующее сообщение
-        if (count($checkEffectiveness) > 0) {
+        if (count($checkEffectiveness) != 0) {
             $checkEffectivenessString = implode(', ', $checkEffectiveness);
             $messageCampaign = "Были остановлены следующие кампании: $checkEffectivenessString";
         } else {
@@ -315,7 +317,14 @@ class DirectService {
         return $result;
     }
 
-    public function checkEffectiveness($campaignsRemote) {
+    /**
+     * Оценка эффективности кампаний
+     * @param $campaignsRemote
+     * @param $timeInterval
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     * @return array
+     */
+    private function checkEffectivenessCampaign($campaignsRemote, $timeInterval) {
         $pausedCampaigns = array();
         $campaignsStrategy = $this->campaignsLoad();
 
@@ -335,29 +344,49 @@ class DirectService {
             }
 
             // сверка кликов и затрат
-            if ($campaignClick < $strategyObj->getDailyclicks()
-                || $campaignPrice > $strategyObj->getDailycosts()
-            ) {
-                $result = $this->stopCampaign($campaignId);
+            if ($timeInterval < 7) {
+                // по дням
+                if ($campaignClick < $strategyObj->getDailyclicks()
+                    || $campaignPrice > $strategyObj->getDailycosts()
+                ) {
+                    $result = $this->stopCampaign($campaignId);
 
-                if ($result["data"] != 1) {
-                    throw new Exception("Ошибка при постановке кампании $campaignId на паузу");
+                    if ($result["data"] != 1) {
+                        throw new Exception("Ошибка при постановке кампании $campaignId на паузу");
+                    }
+
+                    $pausedCampaigns[] = $campaignId;
                 }
+            } else {
+                // по неделям
+                if ($campaignClick < $strategyObj->getWeeklyclicks()
+                    || $campaignPrice > $strategyObj->getWeeklycosts()
+                ) {
+                    $result = $this->stopCampaign($campaignId);
 
-                $pausedCampaigns[] = $campaignId;
+                    if ($result["data"] != 1) {
+                        throw new Exception("Ошибка при постановке кампании $campaignId на паузу");
+                    }
+
+                    $pausedCampaigns[] = $campaignId;
+                }
             }
         }
 
         return $pausedCampaigns;
     }
 
-    // оценка эффективности объявлений из БД
-    public function checkEffectivenessBanners($campaigns, $bannersStat, $timeInterval) {
+    /**
+     * Оценка эффективности объявлений
+     * @param $campaigns
+     * @param $bannersStat
+     * @param $timeInterval
+     * @return array|bool
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     */
+    private function checkEffectivenessBanners($campaigns, $bannersStat, $timeInterval) {
         $pausedBanners = array();
         $bannersStrategy = $this->bannersLoad($campaigns);
-
-        // приведение интервала в пригодный для умножения вид
-        $timeInterval++;
 
         // если в БД нет объявлений
         if (!$bannersStrategy) {
@@ -390,22 +419,33 @@ class DirectService {
                 $bannerDailyClicks = $strategyObj->getDailyclicks() * $timeInterval;
                 $bannerDailyCosts = $strategyObj->getDailycosts() * $timeInterval;
 
-//                var_dump($bannerClick);
-//                var_dump($bannerDailyClicks);
-//                var_dump($bannerPrice);
-//                var_dump($bannerDailyCosts);
-
                 // сверка кликов и затрат
-                if ($bannerClick < $bannerDailyClicks
-                    || $bannerPrice > $bannerDailyCosts
-                ) {
-                    $result = $this->stopBanner($bannersStatCampaignId, array($bannerId));
+                if ($timeInterval < 7) {
+                    // по дням
+                    if ($bannerClick < $bannerDailyClicks
+                        || $bannerPrice > $bannerDailyCosts
+                    ) {
+                        $result = $this->stopBanner($bannersStatCampaignId, array($bannerId));
 
-                    if ($result["data"] != 1) {
-                        throw new Exception("Ошибка при постановке объявления $bannerId на паузу");
+                        if ($result["data"] != 1) {
+                            throw new Exception("Ошибка при постановке объявления $bannerId на паузу");
+                        }
+
+                        $pausedBanners[] = $bannerId;
                     }
+                } else {
+                    // по неделям
+                    if ($bannerClick < $strategyObj->getWeeklyclicks()
+                        || $bannerPrice > $strategyObj->getWeeklycosts()
+                    ) {
+                        $result = $this->stopBanner($bannersStatCampaignId, array($bannerId));
 
-                    $pausedBanners[] = $bannerId;
+                        if ($result["data"] != 1) {
+                            throw new Exception("Ошибка при постановке объявления $bannerId на паузу");
+                        }
+
+                        $pausedBanners[] = $bannerId;
+                    }
                 }
             }
         }
@@ -417,4 +457,43 @@ class DirectService {
         return $pausedBanners;
     }
 
+    /**
+     * Валидация даты и расчет разницы между датами в днях
+     * @param $dateFrom
+     * @param $dateTo
+     * @return mixed
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
+     */
+    private function dateValidation($dateFrom, $dateTo) {
+        // дефолтное значение даты
+        if (!$dateFrom) {
+            $dateFrom = date("Y-m-d");
+        }
+        if (!$dateTo) {
+            $dateTo = date("Y-m-d");
+        }
+
+        // валидация даты
+        $format = "Y-m-d";
+        if (!(\DateTime::createFromFormat($format, $dateFrom) == true
+            && \DateTime::createFromFormat($format, $dateTo) == true)
+        ) {
+            $error = "Неверно задана дата: Y-m-d";
+            throw new Exception($error);
+        }
+
+        // интервал в днях между временем начала и окончания
+        $timeInterval = date_diff(date_create($dateFrom), date_create($dateTo))->days;
+
+        // приведение интервала в пригодный для умножения вид
+        $timeInterval++;
+
+        $validData = array(
+            'from' => $dateFrom,
+            'to' => $dateFrom,
+            'interval' => $timeInterval,
+        );
+
+        return $validData;
+    }
 }

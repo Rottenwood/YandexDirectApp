@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 class DefaultController extends Controller {
 
     /**
-     * Главная страница
+     * Главная точка входа для работы с приложением
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function indexAction() {
@@ -20,13 +20,14 @@ class DefaultController extends Controller {
 
         // параметры для запроса статистики
         $campaigns = $directService->getAllLocalCampaignsIds();
-        $dateFrom = "2014-09-04";
+        $dateFrom = "2014-08-29";
         $dateTo = "2014-09-04";
 
-//        $campaignStat = $directService->getCampaignStat();
-        $campaignStat = $directService->getCampaignStat($campaigns, $dateFrom, $dateTo);
-//        $campaignStat = $directService->getCampaignStat(array(67807));
-        $data["checkResult"] = $campaignStat;
+        // для проверки: запуск функции без передачи значений
+        // $campaignCheckResult = $directService->checkEffectiveness();
+        $campaignCheckResult = $directService->checkEffectiveness($campaigns, $dateFrom, $dateTo);
+
+        $data["checkResult"] = $campaignCheckResult;
 
         return $this->render('PetrDirectApiBundle:Default:index.html.twig', $data);
     }
