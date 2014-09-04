@@ -6,8 +6,11 @@ Strategy Manager for Yandex.Direct API
 Основные файлы
 ==============
 Конфигурационный файл: https://github.com/Rottenwood/YandexDirectApp/blob/master/src/Petr/DirectApiBundle/Resources/config/yandexDirect.yml
+
 Основной контроллер: https://github.com/Rottenwood/YandexDirectApp/blob/master/src/Petr/DirectApiBundle/Controller/DefaultController.php
+
 Методы сервиса: https://github.com/Rottenwood/YandexDirectApp/blob/master/src/Petr/DirectApiBundle/Service/DirectService.php
+
 Сущности для базы данных и ORM: https://github.com/Rottenwood/YandexDirectApp/tree/master/src/Petr/DirectApiBundle/Entity
 
 Как пользоваться
