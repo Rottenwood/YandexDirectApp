@@ -15,15 +15,15 @@ Strategy Manager for Yandex.Direct API
 
 Как пользоваться
 ================
-1. склонировать репозиторий
+* склонировать репозиторий
 ~~~
 git clone https://github.com/Rottenwood/YandexDirectApp.git
 ~~~
-2. установить зависимости, указав реквизиты для доступа к БД
+* установить зависимости, указав реквизиты для доступа к БД
 ~~~
 php composer.phar install
 ~~~
-3. разметить схему базы данных
+* разметить схему базы данных
 ~~~
 app/console doctrine:schema:update --force
 ~~~
