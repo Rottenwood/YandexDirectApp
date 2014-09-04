@@ -28,3 +28,4 @@ php composer.phar install
 ~~~
 app/console doctrine:schema:update --force
 ~~~
+* добавить в базу данных параметры стратегий для кампаний и отдельных объявлений (опционально)
