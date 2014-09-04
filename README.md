@@ -14,6 +14,9 @@ Strategy Manager for Yandex.Direct API
 
 Сущности для базы данных и ORM: https://github.com/Rottenwood/YandexDirectApp/tree/master/src/Petr/DirectApiBundle/Entity
 
+Репозиторий запросов к базе данных:
+https://github.com/Rottenwood/YandexDirectApp/blob/master/src/Petr/DirectApiBundle/Repository/BannerRepository.php
+
 Как пользоваться
 ================
 * склонировать репозиторий
