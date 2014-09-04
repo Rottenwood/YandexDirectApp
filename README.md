@@ -23,3 +23,7 @@ git clone https://github.com/Rottenwood/YandexDirectApp.git
 ~~~
 php composer.phar install
 ~~~
+3. разметить схему базы данных
+~~~
+app/console doctrine:schema:update --force
+~~~
