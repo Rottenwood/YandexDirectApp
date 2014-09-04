@@ -1,6 +1,7 @@
 Simple Symfony2 Yandex.Direct App
 =================================
 Strategy Manager for Yandex.Direct API
+
 Приложение для автоматического управления стратегиями Яндекс.Директа через его API
 
 Основные файлы
