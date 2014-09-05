@@ -1,6 +1,7 @@
 Simple Symfony2 Yandex.Direct App
 =================================
 Strategy Manager for Yandex.Direct API
+
 Приложение для автоматического управления стратегиями Яндекс.Директа через его API
 
 Основные файлы
@@ -13,17 +14,21 @@ Strategy Manager for Yandex.Direct API
 
 Сущности для базы данных и ORM: https://github.com/Rottenwood/YandexDirectApp/tree/master/src/Petr/DirectApiBundle/Entity
 
+Репозиторий запросов к базе данных:
+https://github.com/Rottenwood/YandexDirectApp/blob/master/src/Petr/DirectApiBundle/Repository/BannerRepository.php
+
 Как пользоваться
 ================
-1. склонировать репозиторий
+* склонировать репозиторий
 ~~~
 git clone https://github.com/Rottenwood/YandexDirectApp.git
 ~~~
-2. установить зависимости, указав реквизиты для доступа к БД
+* установить зависимости, указав реквизиты для доступа к БД
 ~~~
 php composer.phar install
 ~~~
-3. разметить схему базы данных
+* разметить схему базы данных
 ~~~
 app/console doctrine:schema:update --force
 ~~~
+* добавить в базу данных параметры стратегий для кампаний и отдельных объявлений (опционально)
