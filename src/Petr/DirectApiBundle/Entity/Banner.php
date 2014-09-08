@@ -53,7 +53,6 @@ class Banner {
      * @ORM\ManyToOne(targetEntity="Camp")
      * @ORM\JoinColumn(name="camp_id", referencedColumnName="id")
      */
-
     private $campId;
 
     /**
